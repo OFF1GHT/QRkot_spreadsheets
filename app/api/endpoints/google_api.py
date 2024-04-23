@@ -1,6 +1,4 @@
 from typing import List
-from datetime import datetime
-# Класс «обёртки»
 from aiogoogle import Aiogoogle
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,8 +10,8 @@ from app.schemas.charity_project import CharityProjectDB
 from app.services.google_api import spreadsheets_create, spreadsheets_update_value, set_user_permissions
 
 from app.crud.charity_project import charity_project_crud
-# Создаём экземпляр класса APIRouter
 router = APIRouter()
+
 
 @router.post(
     '/',

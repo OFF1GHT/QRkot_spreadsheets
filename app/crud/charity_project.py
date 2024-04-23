@@ -33,4 +33,5 @@ class CRUDCharityProject(CRUDBase):
         projects = projects.scalars().all()
         return projects
 
+
 charity_project_crud = CRUDCharityProject(CharityProject)

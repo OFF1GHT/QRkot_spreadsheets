@@ -16,15 +16,14 @@ async def spreadsheets_create(
             'title': f'Отчёт на {now_date_time}',
             'locale': 'ru_RU'
         },
-        'sheets': [
-            {'properties':{'sheetType': 'GRID',
+        'sheets': [{
+            'properties': {'sheetType': 'GRID',
                            'sheetId': 0,
-                           'title':'Лист1',
-                           'gridProperties': {'rowCount': 100, 
+                           'title': 'Лист1',
+                           'gridProperties': {'rowCount': 100,
                                               'columnCount': 11}
                            }
-            }
-        ]
+        }]
     }
     response = await wrapper_services.as_service_account(
         service.spreadsheets.create(json=spreadsheet_body)
@@ -76,4 +75,3 @@ async def spreadsheets_update_value(
             json=update_body
         )
     )
-
