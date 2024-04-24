@@ -8,9 +8,6 @@ Cat Charity Fund - это веб-приложение, позволяющее п
 git@github.com:OFF1GHT/cat_charity_fund.git
 ```
 
-```
-cd yacut
-```
 
 ## Cоздать и активировать виртуальное окружение:
 
@@ -51,12 +48,6 @@ FIRST_SUPERUSER_EMAIL=admin@gmail.com
 FIRST_SUPERUSER_PASSWORD=admin12345
 ```
 
-## Создание миграции:
-
-```
-alembic revision -autogenerate -m "name_migration"
-```
-
 ## Инициализация базы данных:
 ```
 alembic upgrade head
@@ -67,3 +58,12 @@ alembic upgrade head
 ```
 uvicorn app.main:app --reload
 ```
+
+## Используемые  технологии:
+- FastAPI
+- SQLite
+- SQLAlchemy
+- Google API
+- Google Sheets API
+- OAuth 2.0
+- Python Google Auth Library

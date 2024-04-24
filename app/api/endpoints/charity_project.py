@@ -28,9 +28,8 @@ async def post_charity_projects(
         )
 
     charity_project_service = CharityProjectService(session)
-    print(session)
 
-    new_project = await charity_project_service.charity_project_create(charity_project)
+    new_project = await charity_project_service._charity_project_create(charity_project)
 
     return new_project
 
@@ -57,7 +56,7 @@ async def update_charity_project(
     session: AsyncSession = Depends(get_async_session),
 ):
     charity_project_service = CharityProjectService(session)
-    charity_project = await charity_project_service.charity_project_update(
+    charity_project = await charity_project_service._charity_project_update(
         project_id, obj_in
     )
     return charity_project
@@ -74,7 +73,7 @@ async def remove_charity_project(
 ):
     """Удаление благотворительного проекта. Доступно для суперюзеров."""
     charity_project_service = CharityProjectService(session)
-    charity_project = await charity_project_service.charity_project_remove(
+    charity_project = await charity_project_service._charity_project_remove(
         project_id
     )
     return charity_project
