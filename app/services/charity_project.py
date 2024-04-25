@@ -2,7 +2,6 @@ from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from fastapi import HTTPException
 
 from app.crud.base import CRUDBase
@@ -13,11 +12,21 @@ from app.schemas.charity_project import CharityProjectCreate, CharityProjectUpda
 from app.core.constants import MIN_AMOUNT
 
 
+async def get_charity_project_or_404(charity_project_id: int, session: AsyncSession) -> CharityProject:
+    charity_project = await charity_project_crud.get(charity_project_id, session)
+    if charity_project is None:
+        raise HTTPException(
+            status_code=404,
+            detail='Проект не найден!',
+        )
+    return charity_project
+
+
 class CharityProjectService:
     def __init__(self, session):
         self.session = session
 
-    def _validate_investments(self, charity_project: CharityProject.id) -> None:
+    def _validate_investments(self, charity_project: CharityProject) -> None:
         """Проверка на присутствие/отсутствие инвестиций в проекте."""
         if charity_project.invested_amount > MIN_AMOUNT:
             raise HTTPException(
@@ -25,8 +34,11 @@ class CharityProjectService:
                 detail='Проверка на присутствие/отсутствие инвестиций в проекте',
             )
 
-    async def _charity_project_remove(self, charity_project_id: int):
-        charity_project = await self._get_charity_project(charity_project_id)
+    async def _charity_project_remove(self, charity_project: CharityProject):
+        self._validate_investments(charity_project)
+        return charity_project
+
+    async def _charity_project_remove(self, charity_project: CharityProject):
         self._validate_investments(charity_project)
         return charity_project
 
@@ -38,17 +50,6 @@ class CharityProjectService:
             raise HTTPException(
                 status_code=400, detail='Проект с таким именем уже существует!'
             )
-
-    async def _get_charity_project(self, charity_project_id: int) -> CharityProject:
-        charity_project = await charity_project_crud.get(
-            charity_project_id, self.session
-        )
-        if charity_project is None:
-            raise HTTPException(
-                status_code=404,
-                detail='Проект не найден!',
-            )
-        return charity_project
 
     async def _check_project_before_update(
         self, charity_project: CharityProject, obj_in: CharityProjectUpdate
@@ -70,16 +71,13 @@ class CharityProjectService:
             charity_project, self.session
         )
 
-        await CharityProjectService._investing_process(
-            new_charity_project, self.session
-        )
+        await self._investing_process(new_charity_project)
 
         return new_charity_project
 
     async def _charity_project_update(
-        self, charity_project_id: int, obj_in: CharityProjectUpdate
+        self, charity_project: CharityProject, obj_in: CharityProjectUpdate
     ):
-        charity_project = await self._get_charity_project(charity_project_id)
         if obj_in.name:
             await self._check_name_duplicate(obj_in.name)
 
@@ -93,17 +91,16 @@ class CharityProjectService:
         self, donation, user: Optional[User] = None
     ):
         new_donation = await donation_crud.create(donation, self.session, user)
-        await CharityProjectService._investing_process(new_donation, self.session)
+        await self._investing_process(new_donation)
         return new_donation
 
-    @staticmethod
-    async def _investing_process(entity, session: AsyncSession):
+    async def _investing_process(self, entity):
         if entity.invested_amount >= entity.full_amount:
             return
 
         free_amount = entity.full_amount - entity.invested_amount
         crud = Donation if isinstance(entity, CharityProject) else CharityProject
-        unclosed_objects = await CRUDBase(crud).get_unclosed_objects(session)
+        unclosed_objects = await CRUDBase(crud).get_unclosed_objects(self.session)
 
         for db_object in unclosed_objects:
             amount_to_invest = min(
@@ -124,6 +121,6 @@ class CharityProjectService:
             entity.fully_invested = True
             entity.close_date = datetime.now()
 
-        session.add(entity)
-        await session.commit()
-        await session.refresh(entity)
+        self.session.add(entity)
+        await self.session.commit()
+        await self.session.refresh(entity)

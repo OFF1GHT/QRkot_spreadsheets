@@ -8,6 +8,7 @@ from app.schemas.charity_project import (CharityProjectCreate,
                                          CharityProjectDB,
                                          CharityProjectUpdate)
 from app.services.charity_project import CharityProjectService
+from app.services.charity_project import get_charity_project_or_404
 
 router = APIRouter()
 
@@ -41,8 +42,8 @@ async def post_charity_projects(
 async def get_all_charity_projects(
     session: AsyncSession = Depends(get_async_session),
 ):
-    all_project = await charity_project_crud.get_multi(session)
-    return all_project
+    all_projects = await charity_project_crud.get_multi(session)
+    return all_projects
 
 
 @router.patch(
@@ -56,8 +57,9 @@ async def update_charity_project(
     session: AsyncSession = Depends(get_async_session),
 ):
     charity_project_service = CharityProjectService(session)
+    charity_project = await get_charity_project_or_404(project_id, session)  # Получаем объект CharityProject или возвращаем ошибку 404
     charity_project = await charity_project_service._charity_project_update(
-        project_id, obj_in
+        charity_project, obj_in
     )
     return charity_project
 
@@ -73,7 +75,6 @@ async def remove_charity_project(
 ):
     """Удаление благотворительного проекта. Доступно для суперюзеров."""
     charity_project_service = CharityProjectService(session)
-    charity_project = await charity_project_service._charity_project_remove(
-        project_id
-    )
+    charity_project = await get_charity_project_or_404(project_id, session)  # Получаем объект CharityProject или возвращаем ошибку 404
+    await charity_project_service._charity_project_remove(charity_project)
     return charity_project
