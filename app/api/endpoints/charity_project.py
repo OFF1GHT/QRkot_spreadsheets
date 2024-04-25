@@ -30,7 +30,7 @@ async def post_charity_projects(
 
     charity_project_service = CharityProjectService(session)
 
-    new_project = await charity_project_service._charity_project_create(charity_project)
+    new_project = await charity_project_service.charity_project_create(charity_project)
 
     return new_project
 
