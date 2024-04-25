@@ -65,7 +65,7 @@ class CharityProjectService:
                     detail='Нельзя установить сумму меньше вложенной',
                 )
 
-    async def _charity_project_create(self, charity_project: CharityProjectCreate):
+    async def charity_project_create(self, charity_project: CharityProjectCreate):
         await self._check_name_duplicate(charity_project.name)
         new_charity_project = await charity_project_crud.create(
             charity_project, self.session
