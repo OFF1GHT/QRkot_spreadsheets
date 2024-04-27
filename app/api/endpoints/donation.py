@@ -27,7 +27,7 @@ async def create_donation(
     user: User = Depends(current_user),
 ):
     donation_service = CharityProjectService(session)
-    new_donation = await donation_service._create_donation_obj(donation, user)
+    new_donation = await donation_service.create_donation_obj(donation, user)
     return new_donation
 
 

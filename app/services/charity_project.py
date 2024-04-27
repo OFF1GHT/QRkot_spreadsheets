@@ -1,7 +1,6 @@
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 
 from app.crud.base import CRUDBase
@@ -10,16 +9,6 @@ from app.crud.donation import donation_crud
 from app.models import CharityProject, Donation, User
 from app.schemas.charity_project import CharityProjectCreate, CharityProjectUpdate
 from app.core.constants import MIN_AMOUNT
-
-
-async def get_charity_project_or_404(charity_project_id: int, session: AsyncSession) -> CharityProject:
-    charity_project = await charity_project_crud.get(charity_project_id, session)
-    if charity_project is None:
-        raise HTTPException(
-            status_code=404,
-            detail='Проект не найден!',
-        )
-    return charity_project
 
 
 class CharityProjectService:
@@ -34,12 +23,9 @@ class CharityProjectService:
                 detail='Проверка на присутствие/отсутствие инвестиций в проекте',
             )
 
-    async def _charity_project_remove(self, charity_project: CharityProject):
+    async def charity_project_remove(self, charity_project: CharityProject):
         self._validate_investments(charity_project)
-        return charity_project
-
-    async def _charity_project_remove(self, charity_project: CharityProject):
-        self._validate_investments(charity_project)
+        await charity_project_crud.remove(charity_project, self.session)
         return charity_project
 
     async def _check_name_duplicate(self, charity_project_name: str) -> None:
@@ -75,7 +61,7 @@ class CharityProjectService:
 
         return new_charity_project
 
-    async def _charity_project_update(
+    async def charity_project_update(
         self, charity_project: CharityProject, obj_in: CharityProjectUpdate
     ):
         if obj_in.name:
@@ -87,7 +73,7 @@ class CharityProjectService:
         )
         return charity_project
 
-    async def _create_donation_obj(
+    async def create_donation_obj(
         self, donation, user: Optional[User] = None
     ):
         new_donation = await donation_crud.create(donation, self.session, user)
